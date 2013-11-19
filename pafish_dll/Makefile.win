@@ -1,0 +1,63 @@
+# Project: pafish_dll
+# Compiler: Default GCC compiler
+# Compiler Type: MingW 3
+
+WXLIBNAME = wxmsw29u
+CPP       = g++.exe
+CC        = gcc.exe
+WINDRES   = "windres.exe"
+OBJ       = Objects/MingW/dllmain.o Objects/MingW/debuggers.o Objects/MingW/gensandbox.o Objects/MingW/qemu.o Objects/MingW/sandboxie.o Objects/MingW/vbox.o Objects/MingW/vmware.o Objects/MingW/wine.o Objects/MingW/pafish_dll_private.res
+LINKOBJ   = "Objects/MingW/dllmain.o" "Objects/MingW/debuggers.o" "Objects/MingW/gensandbox.o" "Objects/MingW/qemu.o" "Objects/MingW/sandboxie.o" "Objects/MingW/vbox.o" "Objects/MingW/vmware.o" "Objects/MingW/wine.o" Objects/MingW/pafish_dll_private.res
+LIBS      = -L"C:/Program Files (x86)/Dev-Cpp/lib/wx/gcc_lib" -L"C:/Program Files (x86)/Dev-Cpp/lib" -L"C:/Program Files (x86)/Dev-Cpp/MinGW32/lib" -Wl,--add-stdcall-alias  -s 
+INCS      = -I"C:/Program Files (x86)/Dev-Cpp/MinGW32/include"
+CXXINCS   = -I"C:/Program Files (x86)/Dev-Cpp/MinGW32/include" -I"C:/Program Files (x86)/Dev-Cpp/" -I"C:/Program Files (x86)/Dev-Cpp/include/common"
+RCINCS    = --include-dir "C:/PROGRA~2/Dev-Cpp/include/common"
+BIN       = Output/MingW/pafish.dll
+DEFINES   = 
+CXXFLAGS  = $(CXXINCS) $(DEFINES) -DBUILDING_DLL=1   -fexpensive-optimizations -O1
+CFLAGS    = $(INCS) $(DEFINES) -DBUILDING_DLL=1   -fexpensive-optimizations -O1
+GPROF     = gprof.exe
+ifeq ($(OS),Windows_NT)
+   RM = del /Q
+   FixPath = $(subst /,\,$1)
+else
+   RM = rm -f
+   FixPath = $1
+endif
+LINK      = g++.exe
+
+.PHONY: all all-before all-after clean clean-custom
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	$(RM) $(call FixPath,$(LINKOBJ)) "$(call FixPath,$(BIN))"
+
+$(BIN): $(OBJ)
+	$(LINK) -shared $(STATICLIB) $(LINKOBJ) $(LIBS) -Wl,--out-implib,Output/MingW/libpafish.a -o Output/MingW/pafish.dll
+
+Objects/MingW/dllmain.o: $(GLOBALDEPS) dllmain.c
+	$(CC) -c dllmain.c -o Objects/MingW/dllmain.o $(CFLAGS)
+
+Objects/MingW/debuggers.o: $(GLOBALDEPS) pafish/debuggers.c
+	$(CC) -c pafish/debuggers.c -o Objects/MingW/debuggers.o $(CFLAGS)
+
+Objects/MingW/gensandbox.o: $(GLOBALDEPS) pafish/gensandbox.c
+	$(CC) -c pafish/gensandbox.c -o Objects/MingW/gensandbox.o $(CFLAGS)
+
+Objects/MingW/qemu.o: $(GLOBALDEPS) pafish/qemu.c
+	$(CC) -c pafish/qemu.c -o Objects/MingW/qemu.o $(CFLAGS)
+
+Objects/MingW/sandboxie.o: $(GLOBALDEPS) pafish/sandboxie.c
+	$(CC) -c pafish/sandboxie.c -o Objects/MingW/sandboxie.o $(CFLAGS)
+
+Objects/MingW/vbox.o: $(GLOBALDEPS) pafish/vbox.c
+	$(CC) -c pafish/vbox.c -o Objects/MingW/vbox.o $(CFLAGS)
+
+Objects/MingW/vmware.o: $(GLOBALDEPS) pafish/vmware.c
+	$(CC) -c pafish/vmware.c -o Objects/MingW/vmware.o $(CFLAGS)
+
+Objects/MingW/wine.o: $(GLOBALDEPS) pafish/wine.c
+	$(CC) -c pafish/wine.c -o Objects/MingW/wine.o $(CFLAGS)
+
+Objects/MingW/pafish_dll_private.res: Objects/MingW/pafish_dll_private.rc 
+	$(WINDRES) --input-format=rc -o Objects/MingW/pafish_dll_private.res $(RCINCS) Objects/MingW/PAFISH~1.RC -O coff
